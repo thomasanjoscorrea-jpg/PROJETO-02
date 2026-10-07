@@ -10,6 +10,8 @@
 <!-- aplica o tema antes de desenhar a página (evita um "piscar" de cor): escolha salva ou o tema do aparelho -->
 <script>try{document.documentElement.dataset.tema=localStorage.getItem("dcasa-tema")||(matchMedia("(prefers-color-scheme: dark)").matches?"escuro":"claro")}catch(e){}</script>
 <meta property="og:title" content="D'Casa Pizzaria e Petiscaria – Cardápio Online (proposta)">
+<meta property="og:description" content="Pizzas, petiscos e bebidas com entrega. Monte seu pedido e envie pelo WhatsApp. Página de demonstração.">
+<meta property="og:type" content="website">
 <meta property="og:image" content="imagens/logo.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🍕%3C/text%3E%3C/svg%3E">
 
@@ -91,6 +93,7 @@
   :focus-visible { outline: 3px solid var(--cor); outline-offset: 3px; border-radius: 10px; }
   .pular { position: fixed; top: 8px; left: 8px; z-index: 300; padding: 10px 16px; border-radius: 999px; background: var(--texto); color: var(--fundo); text-decoration: none; font-weight: 700; transform: translateY(-160%); transition: transform .2s; }
   .pular:focus { transform: none; }
+  main:focus { outline: none; }
 
   /* faixa "proposta / demonstração" */
   .demo { padding: 8px var(--margem); text-align: center; font-size: .72rem; font-weight: 700; letter-spacing: .4px; line-height: 1.4; background: var(--demo-bg); color: #fff; }
@@ -284,6 +287,11 @@
   .escolhas input { accent-color: var(--cor); }
   .escolhas label:has(input:checked) { border-color: var(--cor); background: var(--cor-clara); color: var(--cor-texto); }
   .msg-erro { min-height: 1.3em; margin-top: 12px; font-size: .9rem; font-weight: 700; color: var(--vermelho); }
+  .nota-exemplo { margin-top: 8px; padding: 8px 12px; border-radius: 10px; font-size: .84rem; color: var(--cinza); background: color-mix(in srgb, var(--cinza) 12%, transparent); }
+  .acoes-info { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-link { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 13px 10px; border-radius: 14px; border: 1px solid var(--borda-forte); background: var(--fundo); color: var(--texto); font-weight: 700; text-decoration: none; transition: border-color .2s, color .2s, transform .1s; }
+  .btn-link:active { transform: scale(.97); }
+  @media (hover: hover) { .btn-link:hover { border-color: var(--cor); color: var(--cor-texto); } }
   .info p { margin: 12px 0; font-size: .96rem; padding-bottom: 12px; border-bottom: 1px solid var(--borda); }
   .info p:last-child { border: 0; }
   .info strong { display: block; margin-bottom: 2px; font-size: .74rem; color: var(--cinza); text-transform: uppercase; letter-spacing: .8px; }
@@ -314,7 +322,7 @@
 </head>
 <body>
 
-<a class="pular" href="#cardapio">Pular para o cardápio</a>
+<a class="pular" href="#principal">Pular para o cardápio</a>
 <!-- Faixa de aviso: esta página é uma proposta. Remova quando for aprovada. -->
 <div class="demo" role="note" id="faixa-demo"></div>
 
@@ -346,7 +354,9 @@
     <input type="search" id="busca" placeholder="Buscar no cardápio" autocomplete="off" enterkeyhint="search">
   </div>
 
-  <main id="cardapio" tabindex="-1"></main>
+  <main id="principal" tabindex="-1">
+    <div id="cardapio" role="tabpanel"></div>
+  </main>
   <footer class="rodape" id="rodape"></footer>
 </div>
 
@@ -454,8 +464,21 @@ const $ = (id) => document.getElementById(id);
 const moeda = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const slug = (s) => "cat-" + s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-");
-const subtotal = () => sacola.reduce((t, i) => t + i.preco * i.qtd, 0);
+const subtotal = () => Math.round(sacola.reduce((t, i) => t + i.preco * i.qtd, 0) * 100) / 100;   // arredonda os centavos
 const totalQtd = () => sacola.reduce((t, i) => t + i.qtd, 0);
+
+// A sacola sobrevive a recarregar a página (só nesta aba; some quando ela fecha). Os preços vêm sempre do cardápio atual.
+const CHAVE_SACOLA = "dcasa-sacola";
+const salvarSacola = () => { try { sessionStorage.setItem(CHAVE_SACOLA, JSON.stringify(sacola.map(({ nome, qtd, obs }) => ({ nome, qtd, obs })))); } catch (e) { /* tudo bem */ } };
+function lerSacola() {
+  try {
+    const todos = CARDAPIO.flatMap((c) => c.itens);
+    return (JSON.parse(sessionStorage.getItem(CHAVE_SACOLA)) || []).flatMap(({ nome, qtd, obs }) => {
+      const item = todos.find((i) => i.nome === nome);
+      return item && qtd > 0 ? [{ chave: nome + "|" + (obs || ""), nome, preco: item.preco, qtd: Math.min(20, qtd), obs: obs || "" }] : [];
+    });
+  } catch (e) { return []; }
+}
 const lerCliente = () => { try { return JSON.parse(localStorage.getItem(CHAVE_CLIENTE)) || {}; } catch (e) { return {}; } };
 const salvarCliente = (d) => { try { localStorage.setItem(CHAVE_CLIENTE, JSON.stringify(d)); } catch (e) { /* sem armazenamento: tudo bem */ } };
 const hhmm = (s) => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
@@ -528,6 +551,10 @@ function desenharCardapio(filtro) {
   const termo = filtro.trim().toLowerCase();
   const categorias = termo ? CARDAPIO : [CARDAPIO[categoriaAtiva]];   // com busca, procura em todas as abas
   marcarAba(Boolean(termo));
+  const painel = $("cardapio");   // o painel das abas diz a leitores de tela de qual aba (ou busca) é o conteúdo
+  if (termo) { painel.removeAttribute("aria-labelledby"); painel.setAttribute("aria-label", "Resultados da busca"); }
+  else { painel.removeAttribute("aria-label"); painel.setAttribute("aria-labelledby", "aba-" + categoriaAtiva); }
+  let n = 0;                      // as 4 primeiras fotos carregam já; as outras sob demanda
   const html = categorias.map((cat) => {
     const itens = cat.itens.filter((i) => !termo || (i.nome + " " + i.desc).toLowerCase().includes(termo));
     if (!itens.length) return "";
@@ -541,7 +568,7 @@ function desenharCardapio(filtro) {
           <span class="desc">${esc(i.desc)}</span>
           <span class="preco">${moeda(i.preco)}</span>
         </span>
-        <span class="foto-caixa" aria-hidden="true">${i.foto ? `<img src="imagens/${esc(i.foto)}.jpg" alt="" loading="lazy" decoding="async" width="118" height="118">` : esc(cat.emoji)}</span>
+        <span class="foto-caixa" aria-hidden="true">${i.foto ? `<img src="imagens/${esc(i.foto)}.jpg" alt="" loading="${n++ < 4 ? "eager" : "lazy"}" decoding="async" width="118" height="118">` : esc(cat.emoji)}</span>
       </button></li>`).join("")}</ul></section>`;
   }).join("");
   $("cardapio").innerHTML = html || '<p class="sem-resultado">Nenhum item encontrado para essa busca.</p>';
@@ -566,22 +593,50 @@ function atualizarBarras() {
   $("flut-total").textContent = moeda(subtotal());
   $("nav-contador").textContent = q;
   $("nav-contador").classList.toggle("oculto", q === 0);
+  $("nav-sacola").setAttribute("aria-label", q ? `Sacola, ${q} ${q === 1 ? "item" : "itens"}` : "Sacola");
+  salvarSacola();
+}
+
+// Dados estruturados para o Google (nome, endereço, telefone, horário, cardápio e preços)
+function dadosEstruturados() {
+  const h = LOJA.horario, nomes = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dados = {
+    "@context": "https://schema.org", "@type": "Restaurant", name: LOJA.nome, telephone: LOJA.telefone, image: "imagens/logo.jpg",
+    address: { "@type": "PostalAddress", streetAddress: LOJA.endereco, addressCountry: "BR" },
+    openingHoursSpecification: [{ "@type": "OpeningHoursSpecification", dayOfWeek: h.dias.map((d) => nomes[d]), opens: h.abre, closes: h.fecha }],
+    hasMenu: { "@type": "Menu", hasMenuSection: CARDAPIO.map((c) => ({
+      "@type": "MenuSection", name: c.categoria,
+      hasMenuItem: c.itens.map((i) => ({ "@type": "MenuItem", name: i.nome, description: i.desc || undefined, offers: { "@type": "Offer", price: i.preco.toFixed(2), priceCurrency: "BRL" } }))
+    })) }
+  };
+  const s = document.createElement("script");
+  s.type = "application/ld+json";
+  s.textContent = JSON.stringify(dados).replace(/</g, "\\u003c");
+  document.head.appendChild(s);
 }
 
 /* ============================================================
    5) FOLHAS: item, categorias, sacola, checkout, informações
    ============================================================ */
-function abrirFolha(html) {
+// Com uma janela aberta, o resto da página fica "inerte" (sem foco, cliques ou leitura por leitores de tela)
+const PARTES_DE_FUNDO = [".app", ".nav-inferior", ".sacola-flutuante", ".demo"];
+const deixarInerte = (v) => PARTES_DE_FUNDO.forEach((s) => { const el = document.querySelector(s); if (el) el.inert = v; });
+// Marca na barra de baixo em qual aba o cliente está (Início, Sacola ou Informações)
+const marcarNav = (id) => document.querySelectorAll(".nav-inferior button").forEach((b) => b.classList.toggle("ativo", b.id === id));
+
+function abrirFolha(html, nav = "nav-inicio") {
   if ($("fundo").classList.contains("oculto")) ultimoFoco = document.activeElement;
   $("folha-conteudo").innerHTML = html;
   $("fundo").classList.remove("oculto");
   document.body.classList.add("travado");
+  deixarInerte(true); marcarNav(nav);
   $("btn-fechar").focus();
 }
 function fecharFolha() {
   if ($("fundo").classList.contains("oculto")) return;
   $("fundo").classList.add("oculto");
   document.body.classList.remove("travado");
+  deixarInerte(false); marcarNav("nav-inicio");
   if (ultimoFoco && document.contains(ultimoFoco)) ultimoFoco.focus();
 }
 
@@ -593,6 +648,7 @@ function folhaItem(cat, nome) {
     <h3 id="folha-titulo">${esc(item.nome)}</h3>
     <p class="desc-completa">${esc(item.desc)}</p>
     <p class="preco-item">${moeda(item.preco)}</p>
+    ${item.exemplo ? '<p class="nota-exemplo">Preço de exemplo, a confirmar com a loja.</p>' : ""}
     <label class="campo">Alguma observação?<textarea id="f-obs" placeholder="Ex.: sem cebola, bem passada..." maxlength="140"></textarea></label>
     <div class="rodape-item">
       <div class="qtd"><button type="button" id="q-menos" aria-label="Diminuir">−</button><span id="q-valor" aria-live="polite">1</span><button type="button" id="q-mais" aria-label="Aumentar">+</button></div>
@@ -611,14 +667,14 @@ function folhaItem(cat, nome) {
 }
 
 function folhaSacola() {
-  if (!sacola.length) { abrirFolha(`<h3 id="folha-titulo">Sua sacola</h3><p class="sem-resultado">Sua sacola está vazia.<br>Escolha algo no cardápio. 🍕</p>`); return; }
+  if (!sacola.length) { abrirFolha(`<h3 id="folha-titulo">Sua sacola</h3><p class="sem-resultado">Sua sacola está vazia.<br>Escolha algo no cardápio. 🍕</p>`, "nav-sacola"); return; }
   const linhas = sacola.map((i) => `<div class="linha"><div><strong>${esc(i.nome)}</strong>${i.obs ? `<br><span class="obs">Obs.: ${esc(i.obs)}</span>` : ""}<br>
       <span class="qtd"><button type="button" data-acao="-" data-chave="${esc(i.chave)}" aria-label="Diminuir ${esc(i.nome)}">−</button><span aria-live="polite">${i.qtd}</span><button type="button" data-acao="+" data-chave="${esc(i.chave)}" aria-label="Aumentar ${esc(i.nome)}">+</button></span></div>
     <strong>${moeda(i.preco * i.qtd)}</strong></div>`).join("");
   abrirFolha(`<h3 id="folha-titulo">Sua sacola</h3>${linhas}
     <div class="linha sem-borda"><span>Subtotal</span><span>${moeda(subtotal())}</span></div>
     <div class="linha sem-borda"><span>Entrega (se for entrega)</span><span>${moeda(LOJA.taxaEntrega)}</span></div>
-    <button type="button" class="btn cheio" id="btn-finalizar">Finalizar pedido</button>`);
+    <button type="button" class="btn cheio" id="btn-finalizar">Finalizar pedido</button>`, "nav-sacola");
   document.querySelectorAll("[data-acao]").forEach((b) => b.addEventListener("click", () => {
     const it = sacola.find((i) => i.chave === b.dataset.chave); if (!it) return;
     it.qtd += b.dataset.acao === "+" ? 1 : -1;
@@ -650,7 +706,7 @@ function folhaCheckout() {
       <div class="linha sem-borda total"><span>Total</span><span id="valor-total">${moeda(subtotal() + LOJA.taxaEntrega)}</span></div>
       <p class="msg-erro" id="msg-erro" role="alert"></p>
       <button type="submit" class="btn cheio whats">Enviar pedido por WhatsApp</button>
-    </form>`);
+    </form>`, "nav-sacola");
   const entrega = () => document.querySelector('input[name="tipo"]:checked').value === "Entrega";
   const recalcular = () => {
     const e = entrega();
@@ -688,7 +744,12 @@ function enviar(e, entrega) {
   if (entrega) msg += `*Endereço:*\n${v("f-rua")}\nBairro: ${v("f-bairro")}\n${v("f-comp") ? `Complemento: ${v("f-comp")}\n` : ""}\n`;
   msg += `*Pagamento:* ${v("f-pag")}`;
   if (v("f-pag") === "Dinheiro" && v("f-troco")) msg += `\nTroco para: ${v("f-troco")}`;
-  window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+  // abre o WhatsApp por um link (não é barrado por bloqueadores de pop-up, que costumam barrar window.open)
+  const link = document.createElement("a");
+  link.href = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`;
+  link.target = "_blank"; link.rel = "noopener";
+  document.body.appendChild(link); link.click(); link.remove();
+  fecharFolha(); avisar("Abrindo o WhatsApp… é só enviar a mensagem 😉");
 }
 
 function folhaInfo() {
@@ -699,7 +760,11 @@ function folhaInfo() {
     <p><strong>Endereço</strong>${esc(LOJA.endereco)}</p>
     <p><strong>Telefone</strong>${esc(LOJA.telefone)}</p>
     <p><strong>Formas de pagamento</strong>${LOJA.pagamentos.map(esc).join(", ")}</p>
-    <p><strong>Taxa de entrega</strong>${moeda(LOJA.taxaEntrega)} (exemplo)</p></div>`);
+    <p><strong>Taxa de entrega</strong>${moeda(LOJA.taxaEntrega)} (exemplo)</p></div>
+    <div class="acoes-info">
+      <a class="btn-link" href="tel:+55${LOJA.telefone.replace(/\D/g, "")}">📞 Ligar</a>
+      <a class="btn-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(LOJA.endereco)}" target="_blank" rel="noopener">📍 Como chegar</a>
+    </div>`, "nav-info");
 }
 
 /* ============================================================
@@ -772,7 +837,10 @@ window.addEventListener("scroll", () => barraCat.classList.toggle("rolou", windo
 // Se o logo não carregar, mostra o monograma no lugar
 $("logo-img").addEventListener("error", () => { $("logo-img").classList.add("oculto"); $("sigla").classList.remove("oculto"); });
 
+sacola = lerSacola();   // recupera a sacola se a página foi recarregada
 montarLoja();
+dadosEstruturados();
+atualizarBarras();
 animarEntrada();
 </script>
 </body>
