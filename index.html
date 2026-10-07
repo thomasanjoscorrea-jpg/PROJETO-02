@@ -6,6 +6,8 @@
 <title>D'Casa Pizzaria e Petiscaria – Cardápio Online (proposta)</title>
 <meta name="description" content="Proposta de cardápio online para a D'Casa Pizzaria e Petiscaria, de Doutor Camargo (PR): pizzas, pizzas doces, petiscos e bebidas, com pedido pelo WhatsApp. Página de demonstração.">
 <meta name="theme-color" content="#d98b52">
+<meta property="og:title" content="D'Casa Pizzaria e Petiscaria – Cardápio Online (proposta)">
+<meta property="og:image" content="imagens/logo.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🍕%3C/text%3E%3C/svg%3E">
 
 <!-- ============================================================
@@ -66,6 +68,9 @@
     display: flex; align-items: center; justify-content: center; border: 4px solid var(--branco); background: #1f1f23;
     box-shadow: 0 4px 14px rgba(0,0,0,.2); color: #f5c242; font-family: Georgia, serif; font-size: 2.1rem; font-weight: 700; letter-spacing: 1px;
   }
+  .logo { overflow: hidden; background: var(--branco); }
+  .logo img { width: 100%; height: 100%; object-fit: cover; }
+  .logo span { background: #1f1f23; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
   .cartao h1 { font-size: 1.3rem; font-weight: 700; }
   .local { margin-top: 6px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; font-size: .9rem; color: var(--cinza); }
   .local svg { width: 16px; height: 16px; flex-shrink: 0; }
@@ -191,7 +196,7 @@
   <header>
     <div class="faixa"></div>
     <div class="cartao">
-      <div class="logo" aria-hidden="true"><span id="sigla"></span></div>
+      <div class="logo"><img id="logo-img" src="imagens/logo.jpg" alt="Logo da D'Casa Pizzaria e Petiscaria" width="150" height="150" fetchpriority="high" decoding="async"><span id="sigla" class="oculto" aria-hidden="true"></span></div>
       <h1 id="nome"></h1>
       <p class="local">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -572,6 +577,9 @@ document.addEventListener("keydown", (e) => {
     else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
   }
 });
+
+// Se o logo não carregar, mostra o monograma no lugar
+$("logo-img").addEventListener("error", () => { $("logo-img").classList.add("oculto"); $("sigla").classList.remove("oculto"); });
 
 montarLoja();
 </script>
