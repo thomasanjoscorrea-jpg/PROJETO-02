@@ -79,10 +79,16 @@
   .status.fechado { color: var(--vermelho); }
 
   .barra-cat { position: sticky; top: 0; z-index: 20; display: flex; gap: 10px; padding: 14px var(--margem) 10px; background: linear-gradient(to bottom, var(--fundo) 80%, rgba(243,244,246,0)); }
-  .btn-cats, .btn-icone { height: 48px; border-radius: 12px; background: var(--branco); border: 1px solid var(--borda); font-weight: 700; color: var(--cinza); }
-  .btn-cats { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 16px; text-align: left; }
-  .btn-icone { width: 48px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .btn-cats svg, .btn-icone svg { width: 20px; height: 20px; }
+  .btn-icone { height: 44px; border-radius: 12px; background: var(--branco); border: 1px solid var(--borda); font-weight: 700; color: var(--cinza); width: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .btn-icone svg { width: 20px; height: 20px; }
+  /* categorias lado a lado (uma "coluna" para cada) */
+  .abas { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .abas::-webkit-scrollbar { display: none; }
+  .aba {
+    flex: 1 0 auto; height: 44px; padding: 0 10px; border-radius: 12px; white-space: nowrap; font-size: .85rem; font-weight: 700;
+    background: var(--branco); border: 1px solid var(--borda); color: var(--cinza); transition: background .2s, color .2s, border-color .2s;
+  }
+  .aba[aria-selected="true"] { background: var(--laranja); border-color: var(--laranja); color: #fff; box-shadow: 0 4px 12px rgba(184,105,47,.3); }
   .busca-linha { padding: 0 var(--margem) 8px; }
   .busca-linha input { width: 100%; height: 48px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--borda); background: var(--branco); font-size: 1rem; }
   .busca-linha input:focus { border-color: var(--laranja); outline: 0; box-shadow: 0 0 0 3px rgba(217,139,82,.25); }
@@ -112,7 +118,7 @@
   .sem-resultado { padding: 44px 16px; text-align: center; color: var(--cinza); }
   .rodape { margin-top: 36px; padding: 24px var(--margem) 8px; text-align: center; font-size: .8rem; color: var(--cinza); line-height: 1.8; }
 
-  @media (hover: hover) { .produto:hover { box-shadow: 0 6px 18px rgba(0,0,0,.1); border-color: #d3d8df; } .btn-cats:hover, .btn-icone:hover { border-color: var(--laranja); } }
+  @media (hover: hover) { .produto:hover { box-shadow: 0 6px 18px rgba(0,0,0,.1); border-color: #d3d8df; } .btn-icone:hover, .aba[aria-selected="false"]:hover { border-color: var(--laranja); } }
 
   /* ---------- 5) Barras fixas ---------- */
   .sacola-flutuante { position: fixed; left: 0; right: 0; bottom: calc(66px + env(safe-area-inset-bottom)); z-index: 40; padding: 0 var(--margem); pointer-events: none; }
@@ -207,8 +213,7 @@
   </header>
 
   <div class="barra-cat">
-    <button type="button" class="btn-cats" id="btn-cats" aria-haspopup="dialog" style="flex:1"><span>Lista de categorias</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+    <nav class="abas" id="abas" role="tablist" aria-label="Categorias do cardápio"></nav>
     <button type="button" class="btn-icone" id="btn-busca" aria-label="Buscar no cardápio" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
   </div>
@@ -271,6 +276,7 @@ const AVISO_DEMO = "Proposta de site · demonstração · pizzas salgadas confor
    2) CARDÁPIO  ← EDITE AQUI (nomes, descrições, preços e fotos)
    "foto": nome do arquivo em imagens/ (sem o .jpg). Sem foto, mostra o emoji da categoria.
    "selo": etiqueta amarela (ex.: "Mais pedido").
+   "rotulo" (na categoria): nome curto usado na aba, se o nome inteiro for muito longo.
    "exemplo": true  → mostra a etiqueta cinza "Exemplo". Apague essa marca quando o preço for confirmado.
    ============================================================ */
 const CARDAPIO = [
@@ -288,7 +294,7 @@ const CARDAPIO = [
     { nome: "Pepperoni",            desc: "Molho, mussarela, pepperoni, tomate e orégano.", preco: 37.00 },
     { nome: "Palmito",              desc: "Molho, mussarela, palmito, tomate e orégano.", preco: 37.00 }
   ]},
-  { categoria: "Pizzas Doces", emoji: "🍫", itens: [
+  { categoria: "Pizzas Doces", rotulo: "Doces", emoji: "🍫", itens: [
     { nome: "Chocolate",            desc: "Massa coberta com chocolate ao leite.", preco: 38.00, exemplo: true },
     { nome: "Romeu e Julieta",      desc: "Mussarela com goiabada.", preco: 38.00, exemplo: true },
     { nome: "Banana com Canela",    desc: "Mussarela, banana, açúcar e canela.", preco: 36.00, exemplo: true },
@@ -317,6 +323,7 @@ const CARDAPIO = [
    ============================================================ */
 let sacola = [];            // [{ chave, nome, preco, qtd, obs }]
 let ultimoFoco = null;
+let categoriaAtiva = 0;     // aba aberta (0 = primeira)
 let temporizadorToast;
 const CHAVE_CLIENTE = "dcasa-cliente";
 const $ = (id) => document.getElementById(id);
@@ -358,12 +365,37 @@ function montarLoja() {
   $("status").textContent = st.texto;
   $("status").classList.toggle("fechado", !st.aberto);
   $("rodape").innerHTML = `<strong>${esc(LOJA.nome)}</strong><br>${esc(LOJA.endereco)}<br>${esc(LOJA.telefone)}<br><small>Página de demonstração (proposta).</small>`;
+  $("abas").innerHTML = CARDAPIO.map((c, i) =>
+    `<button type="button" role="tab" id="aba-${i}" class="aba" aria-controls="cardapio" data-cat="${i}">${esc(c.rotulo || c.categoria)}</button>`).join("");
+  document.querySelectorAll(".aba").forEach((b) => b.addEventListener("click", () => irParaAba(Number(b.dataset.cat))));
   desenharCardapio("");
+}
+
+// Abre uma aba. Se vier do teclado, o foco acompanha.
+function irParaAba(i, focar) {
+  categoriaAtiva = i;
+  $("busca").value = "";
+  desenharCardapio("");
+  if (focar) $("aba-" + i).focus();
+  const topo = $("cardapio").getBoundingClientRect().top;
+  if (topo < 70) window.scrollBy({ top: topo - 70, behavior: "smooth" });   // volta ao começo da lista
+}
+
+// Marca a aba aberta (nenhuma, enquanto está buscando)
+function marcarAba(buscando) {
+  document.querySelectorAll(".aba").forEach((b, i) => {
+    b.setAttribute("aria-selected", !buscando && i === categoriaAtiva);
+    b.tabIndex = i === categoriaAtiva ? 0 : -1;       // setas do teclado trocam de aba
+  });
+  const ativa = document.querySelector('.aba[aria-selected="true"]');
+  if (ativa) { const nav = $("abas"); nav.scrollTo({ left: ativa.offsetLeft - (nav.clientWidth - ativa.offsetWidth) / 2, behavior: "smooth" }); }
 }
 
 function desenharCardapio(filtro) {
   const termo = filtro.trim().toLowerCase();
-  const html = CARDAPIO.map((cat) => {
+  const categorias = termo ? CARDAPIO : [CARDAPIO[categoriaAtiva]];   // com busca, procura em todas as abas
+  marcarAba(Boolean(termo));
+  const html = categorias.map((cat) => {
     const itens = cat.itens.filter((i) => !termo || (i.nome + " " + i.desc).toLowerCase().includes(termo));
     if (!itens.length) return "";
     const id = slug(cat.categoria);
@@ -443,16 +475,6 @@ function folhaItem(cat, nome) {
     fecharFolha(); atualizarBarras(); avisar(`✓ ${nome} adicionado`);
     const b = $("btn-sacola-flutuante"); b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump");
   });
-}
-
-function folhaCategorias() {
-  abrirFolha(`<h3 id="folha-titulo">Categorias</h3><ul class="lista-cats">${CARDAPIO.map((c) =>
-    `<li><button type="button" data-ir="${slug(c.categoria)}">${esc(c.emoji)} ${esc(c.categoria)} <small>(${c.itens.length})</small></button></li>`).join("")}</ul>`);
-  document.querySelectorAll("[data-ir]").forEach((b) => b.addEventListener("click", () => {
-    $("busca").value = ""; desenharCardapio("");
-    fecharFolha();
-    const alvo = $(b.dataset.ir); if (alvo) alvo.scrollIntoView({ behavior: "smooth" });
-  }));
 }
 
 function folhaSacola() {
@@ -550,7 +572,18 @@ function folhaInfo() {
 /* ============================================================
    6) EVENTOS E INICIALIZAÇÃO
    ============================================================ */
-$("btn-cats").addEventListener("click", folhaCategorias);
+// Teclado nas abas: setas, Home e End
+$("abas").addEventListener("keydown", (e) => {
+  const n = CARDAPIO.length;
+  let i = categoriaAtiva;
+  if (e.key === "ArrowRight") i = (i + 1) % n;
+  else if (e.key === "ArrowLeft") i = (i - 1 + n) % n;
+  else if (e.key === "Home") i = 0;
+  else if (e.key === "End") i = n - 1;
+  else return;
+  e.preventDefault();
+  irParaAba(i, true);
+});
 $("btn-info").addEventListener("click", folhaInfo);
 $("nav-info").addEventListener("click", folhaInfo);
 $("nav-sacola").addEventListener("click", folhaSacola);
