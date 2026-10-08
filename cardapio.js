@@ -7,15 +7,16 @@
    1) DADOS DA LOJA  ← EDITE AQUI
    ============================================================ */
 // >>> ALTERE AQUI O NÚMERO DO WHATSAPP QUE VAI RECEBER OS PEDIDOS (55 + DDD + número, só dígitos) <<<
-// Atenção: este número recebe as mensagens dos pedidos feitos no site (inclusive os de teste).
-const WHATSAPP_NUMERO = "5544984299854";
+// Está com um número de teste para a apresentação não enviar mensagem para ninguém sem querer.
+// Antes de usar de verdade, troque pelo número da loja (isso passa a receber os pedidos, inclusive os de teste).
+const WHATSAPP_NUMERO = "5500000000000";
 
 const LOJA = {
   nome: "D'Casa Pizzaria e Petiscaria",
   sigla: "D'C",                                       // letras do logo redondo
   cidade: "Doutor Camargo - PR",
   endereco: "Praça Brasil, 112 – Centro, Doutor Camargo/PR",
-  telefone: "(44) 98429-9854",
+  telefone: "(44) 00000-0000",
   taxaEntrega: 5.00,                                  // EXEMPLO: confirme com a loja
   horario: { abre: "18:00", fecha: "23:00", dias: [0, 2, 3, 4, 5, 6] },   // terça a domingo (0 = domingo; segunda fechado)
   pagamentos: ["Pix", "Cartão de Crédito", "Cartão de Débito", "Dinheiro"]
