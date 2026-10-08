@@ -15,7 +15,7 @@ const LOJA = {
   sigla: "D'C",                                       // letras do logo redondo
   cidade: "Doutor Camargo - PR",
   endereco: "Praça Brasil, 112 – Centro, Doutor Camargo/PR",
-  telefone: "(44) 98859-1371",
+  telefone: "(44) 98429-9854",
   taxaEntrega: 5.00,                                  // EXEMPLO: confirme com a loja
   horario: { abre: "18:00", fecha: "23:00", dias: [0, 2, 3, 4, 5, 6] },   // terça a domingo (0 = domingo; segunda fechado)
   pagamentos: ["Pix", "Cartão de Crédito", "Cartão de Débito", "Dinheiro"]
