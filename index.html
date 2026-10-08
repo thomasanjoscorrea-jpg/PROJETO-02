@@ -389,7 +389,8 @@
   </div>
 </div>
 
-<script src="cardapio.js"></script>
+<!-- Carrega o cardapio.js sempre na versão mais nova. Sem isso, o navegador pode mostrar preço ou telefone antigo por até 10 minutos depois de uma edição. -->
+<script>document.write('<script src="cardapio.js?t=' + Date.now() + '"><\/script>');</script>
 <script>
 /* Os dados da loja e o cardápio ficam em cardapio.js (carregado antes deste script). */
 if (typeof CARDAPIO === "undefined" || typeof LOJA === "undefined") {
