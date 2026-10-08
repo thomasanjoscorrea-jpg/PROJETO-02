@@ -7,8 +7,8 @@
    1) DADOS DA LOJA  ← EDITE AQUI
    ============================================================ */
 // >>> ALTERE AQUI O NÚMERO DO WHATSAPP QUE VAI RECEBER OS PEDIDOS (55 + DDD + número, só dígitos) <<<
-// Está com um número de teste para a apresentação não enviar mensagem para ninguém sem querer.
-const WHATSAPP_NUMERO = "5500000000000";
+// Atenção: este número recebe as mensagens dos pedidos feitos no site (inclusive os de teste).
+const WHATSAPP_NUMERO = "5544984299854";
 
 const LOJA = {
   nome: "D'Casa Pizzaria e Petiscaria",
