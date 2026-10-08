@@ -386,72 +386,13 @@
   </div>
 </div>
 
+<script src="cardapio.js"></script>
 <script>
-/* ============================================================
-   1) DADOS DA LOJA  ← EDITE AQUI
-   ============================================================ */
-// >>> ALTERE AQUI O NÚMERO DO WHATSAPP QUE VAI RECEBER OS PEDIDOS (55 + DDD + número, só dígitos) <<<
-// Está com um número de teste para a apresentação não enviar mensagem para ninguém sem querer.
-const WHATSAPP_NUMERO = "5500000000000";
-
-const LOJA = {
-  nome: "D'Casa Pizzaria e Petiscaria",
-  sigla: "D'C",                                       // letras do logo redondo
-  cidade: "Doutor Camargo - PR",
-  endereco: "Praça Brasil, 112 – Centro, Doutor Camargo/PR",
-  telefone: "(44) 98859-1371",
-  taxaEntrega: 5.00,                                  // EXEMPLO: confirme com a loja
-  horario: { abre: "18:00", fecha: "23:00", dias: [0, 2, 3, 4, 5, 6] },   // terça a domingo (0 = domingo; segunda fechado)
-  pagamentos: ["Pix", "Cartão de Crédito", "Cartão de Débito", "Dinheiro"]
-};
-const AVISO_DEMO = "Proposta de site · demonstração · pizzas salgadas conforme foto do cardápio (preços a confirmar) · demais itens são exemplos";
-
-/* ============================================================
-   2) CARDÁPIO  ← EDITE AQUI (nomes, descrições, preços e fotos)
-   "foto": nome do arquivo em imagens/ (sem o .jpg). Sem foto, mostra o emoji da categoria.
-   "selo": etiqueta amarela (ex.: "Mais pedido").
-   "rotulo" (na categoria): nome curto usado na aba, se o nome inteiro for muito longo.
-   "exemplo": true  → mostra a etiqueta cinza "Exemplo". Apague essa marca quando o preço for confirmado.
-   ============================================================ */
-const CARDAPIO = [
-  { categoria: "Pizzas", emoji: "🍕", itens: [
-    { nome: "Mussarela", foto: "mussarela",            desc: "Molho, mussarela, milho, tomate e orégano.", preco: 32.00 },
-    { nome: "Napolitana", foto: "napolitana",           desc: "Molho, mussarela, presunto, tomate, milho, azeitona e orégano.", preco: 34.00 },
-    { nome: "Bacon", foto: "bacon",                desc: "Molho, mussarela, bacon, tomate, milho e orégano.", preco: 37.00 },
-    { nome: "Calabresa", foto: "calabresa",            desc: "Molho, mussarela, calabresa, cebola, tomate, milho e orégano.", preco: 37.00, selo: "Mais pedido" },
-    { nome: "Frango", foto: "frango",               desc: "Molho, mussarela, frango, milho, azeitona, tomate e orégano.", preco: 37.00 },
-    { nome: "Frango com Catupiry", foto: "frango-catupiry",  desc: "Molho, mussarela, frango, catupiry, milho, azeitona, tomate e orégano.", preco: 40.00, selo: "Mais pedido" },
-    { nome: "Strogonoff de Frango", foto: "strogonoff", desc: "Molho, mussarela, strogonoff de frango, milho e batata palha.", preco: 42.00 },
-    { nome: "4 Queijos", foto: "quatro-queijos",            desc: "Molho, mussarela, provolone, catupiry, prato, milho e orégano.", preco: 38.00 },
-    { nome: "4 Queijos com Bacon", foto: "quatro-queijos-bacon",  desc: "Molho, mussarela, provolone, catupiry, prato, bacon, milho e orégano.", preco: 40.00 },
-    { nome: "Alcatra com Queijo", foto: "alcatra",   desc: "Molho, mussarela, alcatra, cebola, azeitona, milho, tomate e orégano.", preco: 50.00 },
-    { nome: "Pepperoni", foto: "pepperoni",            desc: "Molho, mussarela, pepperoni, tomate e orégano.", preco: 37.00 },
-    { nome: "Palmito", foto: "palmito",              desc: "Molho, mussarela, palmito, tomate e orégano.", preco: 37.00 }
-  ]},
-  { categoria: "Pizzas Doces", rotulo: "Doces", emoji: "🍫", itens: [
-    { nome: "Chocolate", foto: "doce-chocolate",            desc: "Massa coberta com chocolate ao leite.", preco: 38.00, exemplo: true },
-    { nome: "Romeu e Julieta", foto: "doce-romeu",      desc: "Mussarela com goiabada.", preco: 38.00, exemplo: true },
-    { nome: "Banana com Canela", foto: "doce-banana",    desc: "Mussarela, banana, açúcar e canela.", preco: 36.00, exemplo: true },
-    { nome: "Prestígio", foto: "doce-prestigio",            desc: "Chocolate com coco ralado.", preco: 40.00, exemplo: true }
-  ]},
-  { categoria: "Petiscos", emoji: "🍟", itens: [
-    { nome: "Torre de Batata", foto: "torre-batata",      desc: "Batata frita em camadas com queijo e bacon. Destaque da casa.", preco: 55.00, selo: "Destaque", exemplo: true },
-    { nome: "Batata Frita", foto: "batata-frita",         desc: "Porção crocante, ideal para dividir.", preco: 32.00, exemplo: true },
-    { nome: "Batata com Queijo e Bacon", foto: "batata-queijo-bacon", desc: "Batata frita coberta com queijo derretido e bacon.", preco: 42.00, exemplo: true },
-    { nome: "Calabresa Acebolada", foto: "calabresa-acebolada",  desc: "Calabresa fatiada com cebola.", preco: 36.00, exemplo: true },
-    { nome: "Isca de Frango", foto: "isca-frango",       desc: "Iscas de frango empanadas e fritas.", preco: 42.00, exemplo: true },
-    { nome: "Anéis de Cebola", foto: "aneis-cebola",      desc: "Cebola empanada e frita.", preco: 28.00, exemplo: true },
-    { nome: "Mandioca Frita", foto: "mandioca",       desc: "Mandioca frita sequinha.", preco: 30.00, exemplo: true }
-  ]},
-  { categoria: "Bebidas", emoji: "🥤", itens: [
-    { nome: "Chopp 300ml", foto: "chopp",          desc: "Venda proibida para menores de 18 anos.", preco: 8.00, exemplo: true },
-    { nome: "Refrigerante 2L", foto: "refri-2l",      desc: "Cola ou guaraná.", preco: 14.00, exemplo: true },
-    { nome: "Refrigerante Lata", foto: "refri-lata",    desc: "Cola, guaraná ou laranja.", preco: 6.00, exemplo: true },
-    { nome: "Suco 500ml", foto: "suco",           desc: "Sabores do dia.", preco: 9.00, exemplo: true },
-    { nome: "Água 500ml", foto: "agua",           desc: "Com ou sem gás.", preco: 3.50, exemplo: true }
-  ]}
-];
-
+/* Os dados da loja e o cardápio ficam em cardapio.js (carregado antes deste script). */
+if (typeof CARDAPIO === "undefined" || typeof LOJA === "undefined") {
+  document.body.innerHTML = '<p style="padding:32px 20px;text-align:center;font-family:system-ui,sans-serif">Não foi possível carregar o cardápio agora. Tente novamente em instantes.</p>';
+  throw new Error("cardapio.js não carregou ou tem um erro de digitação (veja o COMO-EDITAR.md)");
+}
 /* ============================================================
    3) ESTADO E UTILITÁRIOS
    ============================================================ */
@@ -503,15 +444,16 @@ function statusLoja() {
    4) CARDÁPIO NA TELA
    ============================================================ */
 function montarLoja() {
-  document.title = `${LOJA.nome} – Cardápio Online (proposta)`;
+  document.title = `${LOJA.nome} – Cardápio Online${AVISO_DEMO ? " (proposta)" : ""}`;
   $("faixa-demo").textContent = AVISO_DEMO;
+  $("faixa-demo").classList.toggle("oculto", !AVISO_DEMO);   // AVISO_DEMO vazio ("") esconde a faixa de proposta
   $("nome").textContent = LOJA.nome;
   $("sigla").textContent = LOJA.sigla;
   $("cidade").textContent = LOJA.cidade;
   const st = statusLoja();
   $("status").textContent = st.texto;
   $("status").classList.toggle("fechado", !st.aberto);
-  $("rodape").innerHTML = `<strong>${esc(LOJA.nome)}</strong><br>${esc(LOJA.endereco)}<br>${esc(LOJA.telefone)}<br><small>Página de demonstração (proposta).</small>`;
+  $("rodape").innerHTML = `<strong>${esc(LOJA.nome)}</strong><br>${esc(LOJA.endereco)}<br>${esc(LOJA.telefone)}${AVISO_DEMO ? "<br><small>Página de demonstração (proposta).</small>" : ""}`;
   $("abas").innerHTML = CARDAPIO.map((c, i) =>
     `<button type="button" role="tab" id="aba-${i}" class="aba" aria-controls="cardapio" data-cat="${i}">${esc(c.rotulo || c.categoria)}</button>`).join("");
   document.querySelectorAll(".aba").forEach((b) => b.addEventListener("click", () => irParaAba(Number(b.dataset.cat))));
@@ -595,6 +537,21 @@ function atualizarBarras() {
   $("nav-contador").classList.toggle("oculto", q === 0);
   $("nav-sacola").setAttribute("aria-label", q ? `Sacola, ${q} ${q === 1 ? "item" : "itens"}` : "Sacola");
   salvarSacola();
+}
+
+// Confere o cardápio quando a página abre: aceita preço escrito como "32,00", acha nomes repetidos e preços inválidos.
+// Os avisos aparecem no console do navegador (F12), para quem edita o cardapio.js conferir o que errou.
+function prepararCardapio(cardapio) {
+  const avisos = [], vistos = new Set();
+  cardapio.forEach((cat) => cat.itens.forEach((i) => {
+    if (typeof i.preco !== "number") i.preco = Number(String(i.preco).replace(",", "."));
+    if (!(i.preco > 0)) { avisos.push(`preço inválido em "${i.nome}" (use números, como 32.00)`); i.preco = 0; }
+    if (!i.nome) avisos.push(`item sem nome na categoria "${cat.categoria}"`);
+    else if (vistos.has(i.nome)) avisos.push(`nome repetido: "${i.nome}" (cada item precisa de um nome diferente)`);
+    else vistos.add(i.nome);
+    i.desc = i.desc || "";
+  }));
+  return avisos;
 }
 
 // Dados estruturados para o Google (nome, endereço, telefone, horário, cardápio e preços)
@@ -837,6 +794,7 @@ window.addEventListener("scroll", () => barraCat.classList.toggle("rolou", windo
 // Se o logo não carregar, mostra o monograma no lugar
 $("logo-img").addEventListener("error", () => { $("logo-img").classList.add("oculto"); $("sigla").classList.remove("oculto"); });
 
+prepararCardapio(CARDAPIO).forEach((a) => console.warn("[cardápio] " + a));
 sacola = lerSacola();   // recupera a sacola se a página foi recarregada
 montarLoja();
 dadosEstruturados();
