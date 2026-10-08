@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>D'Casa Pizzaria e Petiscaria – Cardápio Online (proposta)</title>
+<meta name="description" content="Proposta de cardápio online para a D'Casa Pizzaria e Petiscaria, de Doutor Camargo (PR): pizzas, pizzas doces, petiscos e bebidas, com pedido pelo WhatsApp. Página de demonstração.">
+<meta name="theme-color" content="#c8191f">
+<meta name="color-scheme" content="light dark">
+<!-- aplica o tema antes de desenhar a página (evita um "piscar" de cor): escolha salva ou o tema do aparelho -->
+<script>try{document.documentElement.dataset.tema=localStorage.getItem("dcasa-tema")||(matchMedia("(prefers-color-scheme: dark)").matches?"escuro":"claro")}catch(e){}</script>
+<meta property="og:title" content="D'Casa Pizzaria e Petiscaria – Cardápio Online (proposta)">
+<meta property="og:description" content="Pizzas, petiscos e bebidas com entrega. Monte seu pedido e envie pelo WhatsApp. Página de demonstração.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="imagens/logo.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🍕%3C/text%3E%3C/svg%3E">
+
+<!-- ============================================================
+     ESTILOS
+     1 variáveis · 2 base · 3 topo · 4 cardápio · 5 barras · 6 folhas (janelas) · 7 ajustes
+     ============================================================ -->
+<style>
+
+  /* ---------- 1) Variáveis (troque as cores aqui) ---------- */
+  :root {
+    color-scheme: light;
+    --cor: #c8191f;                 /* vermelho do logo */
+    --cor-escura: #9e1217;
+    --cor-clara: #fdecea;
+    --cor-texto: #9e1217;           /* vermelho usado em texto sobre fundo claro */
+    --texto: #1f2733;
+    --cinza: #667085;
+    --fundo: #f4f5f7;
+    --fundo-vidro: rgba(244, 245, 247, .86);
+    --fundo-externo: #e6e8ec;
+    --branco: #ffffff;              /* superfície dos cartões */
+    --borda: #e4e7ec;
+    --borda-forte: #cfd4dc;
+    --verde: #12a150;
+    --vermelho: #d64545;            /* erros */
+    --amarelo: #fff2c9;
+    --amarelo-texto: #7a5a08;
+    --demo-bg: #1f2733;
+    --toast-bg: rgba(31, 39, 51, .94);
+    --sombra-1: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
+    --sombra-2: 0 10px 28px rgba(16, 24, 40, .14);
+    --sombra-cor: 0 10px 24px rgba(158, 18, 23, .32);
+    --grad-cor: linear-gradient(135deg, #d9232a, #a8141a);
+    --raio: 18px;
+    --largura: 560px;
+    --margem: max(16px, env(safe-area-inset-left), env(safe-area-inset-right));
+    --curva: cubic-bezier(.2, .8, .2, 1);
+  }
+  /* modo escuro: liga quando o <html> tem data-tema="escuro" (o botão do topo e o tema do aparelho controlam isso) */
+  :root[data-tema="escuro"] {
+      color-scheme: dark;
+      --cor: #e0353b;
+      --cor-escura: #b3151b;
+      --cor-clara: #2e1618;
+      --cor-texto: #ff8a8e;
+      --texto: #f2f4f7;
+      --cinza: #a3acb9;
+      --fundo: #101216;
+      --fundo-vidro: rgba(16, 18, 22, .86);
+      --fundo-externo: #090a0c;
+      --branco: #1a1d23;
+      --borda: #2a2f38;
+      --borda-forte: #3a414d;
+      --verde: #3ddc84;
+      --amarelo: #3a2f0c;
+      --amarelo-texto: #ffd66b;
+      --demo-bg: #000;
+      --toast-bg: rgba(42, 47, 56, .96);
+      --sombra-1: 0 1px 2px rgba(0, 0, 0, .4);
+      --sombra-2: 0 12px 30px rgba(0, 0, 0, .55);
+      --grad-cor: linear-gradient(135deg, #e8393f, #b3151b);
+  }
+  @media (min-width: 900px) { :root { --largura: 1000px; } }
+
+  /* ---------- 2) Base ---------- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 84px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: var(--fundo-externo); scrollbar-width: thin; scrollbar-color: var(--borda-forte) transparent; }
+  body { font-family: system-ui, "Segoe UI", Roboto, Arial, sans-serif; color: var(--texto); line-height: 1.45; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body.travado { overflow: hidden; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  ul { list-style: none; }
+  img { display: block; max-width: 100%; }
+  h1, h2, h3 { text-wrap: balance; }
+  ::selection { background: var(--cor); color: #fff; }
+  .oculto { display: none !important; }
+  .so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  :focus-visible { outline: 3px solid var(--cor); outline-offset: 3px; border-radius: 10px; }
+  .pular { position: fixed; top: 8px; left: 8px; z-index: 300; padding: 10px 16px; border-radius: 999px; background: var(--texto); color: var(--fundo); text-decoration: none; font-weight: 700; transform: translateY(-160%); transition: transform .2s; }
+  .pular:focus { transform: none; }
+  main:focus { outline: none; }
+
+  /* faixa "proposta / demonstração" */
+  .demo { padding: 8px var(--margem); text-align: center; font-size: .72rem; font-weight: 700; letter-spacing: .4px; line-height: 1.4; background: var(--demo-bg); color: #fff; }
+
+  /* o "aplicativo": coluna de celular no telefone, mais larga no computador */
+  .app { position: relative; max-width: var(--largura); min-height: 100vh; margin: 0 auto; background: var(--fundo); box-shadow: 0 0 70px rgba(0, 0, 0, .12); padding-bottom: calc(150px + env(safe-area-inset-bottom)); }
+
+  /* ---------- 3) Topo ---------- */
+  .faixa {
+    height: 112px; background: radial-gradient(420px 160px at 85% -20%, rgba(255, 255, 255, .22), transparent 70%), linear-gradient(135deg, #8f1015, var(--cor) 55%, #ea4b44);
+  }
+  .cartao {
+    position: relative; margin: -36px var(--margem) 0; padding: 66px 18px 18px; text-align: center;
+    background: var(--branco); border-radius: 26px; box-shadow: var(--sombra-2); border: 1px solid var(--borda);
+  }
+  .logo {
+    position: absolute; top: -56px; left: 50%; transform: translateX(-50%); width: 112px; height: 112px; border-radius: 50%; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; background: #fff; border: 4px solid var(--branco);
+    box-shadow: 0 0 0 1px var(--borda), 0 12px 28px rgba(158, 18, 23, .35);
+    color: #f5c242; font-family: Georgia, serif; font-size: 2.1rem; font-weight: 700; letter-spacing: 1px;
+  }
+  .logo img { width: 100%; height: 100%; object-fit: cover; }
+  .logo span { background: #1f1f23; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  /* botão de tema (sol / lua) no canto do cartão */
+  .btn-tema {
+    position: absolute; top: 12px; right: 12px; z-index: 3; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+    background: var(--fundo); border: 1px solid var(--borda); color: var(--cinza); transition: color .2s, border-color .2s, transform .25s var(--curva), background .2s;
+  }
+  .btn-tema svg { width: 20px; height: 20px; }
+  .btn-tema .icone-sol { display: none; }
+  :root[data-tema="escuro"] .btn-tema .icone-sol { display: block; }
+  :root[data-tema="escuro"] .btn-tema .icone-lua { display: none; }
+  .btn-tema:active { transform: rotate(25deg) scale(.92); }
+  @media (hover: hover) { .btn-tema:hover { color: var(--cor); border-color: var(--cor); } }
+  .cartao h1 { font-size: clamp(1.25rem, 5vw, 1.6rem); font-weight: 800; letter-spacing: -.2px; }
+  .local { margin-top: 6px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; font-size: .9rem; color: var(--cinza); }
+  .local svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--cor); }
+  .link { font-weight: 700; color: var(--texto); text-decoration: underline; text-decoration-color: var(--cor); text-underline-offset: 4px; text-decoration-thickness: 2px; }
+  .status { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 6px 14px; border-radius: 999px; font-size: .85rem; font-weight: 700; color: var(--verde); background: color-mix(in srgb, var(--verde) 12%, transparent); }
+  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulsa 2s infinite; }
+  .status.fechado { color: var(--vermelho); background: color-mix(in srgb, var(--vermelho) 12%, transparent); }
+  .status.fechado::before { animation: none; }
+
+  .barra-cat {
+    position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; margin-top: 8px; padding: 12px var(--margem) 10px;
+    background: var(--fundo-vidro); -webkit-backdrop-filter: blur(14px) saturate(1.5); backdrop-filter: blur(14px) saturate(1.5);
+    border-bottom: 1px solid transparent; transition: border-color .2s, box-shadow .2s;
+  }
+  .barra-cat.rolou { border-bottom-color: var(--borda); box-shadow: 0 6px 16px -10px rgba(16, 24, 40, .25); }
+  .btn-icone {
+    flex-shrink: 0; width: 46px; height: 46px; display: inline-flex; align-items: center; justify-content: center; border-radius: 14px;
+    background: var(--branco); border: 1px solid var(--borda); color: var(--cinza); box-shadow: var(--sombra-1); transition: border-color .2s, color .2s, transform .1s;
+  }
+  .btn-icone svg { width: 20px; height: 20px; }
+  .btn-icone[aria-expanded="true"] { color: var(--cor); border-color: var(--cor); }
+  .btn-icone:active { transform: scale(.94); }
+  .abas { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .abas::-webkit-scrollbar { display: none; }
+  .aba {
+    flex: 1 0 auto; height: 46px; padding: 0 12px; border-radius: 14px; white-space: nowrap; font-size: .86rem; font-weight: 700; letter-spacing: .1px;
+    background: var(--branco); border: 1px solid var(--borda); color: var(--cinza); box-shadow: var(--sombra-1);
+    transition: background .25s, color .25s, border-color .25s, box-shadow .25s, transform .1s;
+  }
+  .aba:active { transform: scale(.96); }
+  .aba[aria-selected="true"] { background: var(--grad-cor); border-color: transparent; color: #fff; box-shadow: var(--sombra-cor); }
+  .busca-linha { padding: 2px var(--margem) 8px; animation: desce .25s var(--curva); }
+  .busca-linha input {
+    width: 100%; height: 50px; padding: 0 18px; border-radius: 14px; border: 1px solid var(--borda-forte); background: var(--branco); font-size: 1rem;
+    box-shadow: var(--sombra-1); transition: border-color .2s, box-shadow .2s;
+  }
+  .busca-linha input::placeholder { color: var(--cinza); }
+  .busca-linha input:focus { border-color: var(--cor); outline: 0; box-shadow: 0 0 0 4px color-mix(in srgb, var(--cor) 22%, transparent); }
+
+  /* ---------- 4) Cardápio ---------- */
+  .secao { padding: 0 var(--margem); }
+  .secao h2 { display: flex; align-items: center; gap: 12px; margin: 26px 0 14px; font-size: 1.35rem; font-weight: 800; letter-spacing: -.2px; }
+  .secao h2::after { content: ""; flex: 1; height: 2px; border-radius: 2px; background: linear-gradient(to right, var(--borda-forte), transparent); }
+  .lista { display: grid; gap: 14px; }
+  @media (min-width: 900px) { .lista { grid-template-columns: 1fr 1fr; gap: 16px; } .faixa { height: 140px; } }
+  .lista li { display: flex; }
+  .produto {
+    position: relative; display: flex; gap: 14px; width: 100%; padding: 14px; text-align: left; border-radius: var(--raio);
+    background: var(--branco); border: 1px solid var(--borda); box-shadow: var(--sombra-1);
+    transition: transform .25s var(--curva), box-shadow .25s, border-color .25s;
+  }
+  .produto:active { transform: scale(.985); }
+  .produto .texto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .selos { display: flex; flex-wrap: wrap; gap: 6px; }
+  .selo { padding: 3px 10px; border-radius: 8px; background: var(--amarelo); color: var(--amarelo-texto); font-size: .68rem; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; }
+  .selo.exemplo { background: color-mix(in srgb, var(--cinza) 16%, transparent); color: var(--cinza); }
+  .produto .nome { font-size: 1.06rem; font-weight: 700; line-height: 1.25; }
+  .produto .desc { flex: 1; font-size: .87rem; line-height: 1.5; color: var(--cinza); display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .produto .preco { margin-top: 4px; font-size: 1.1rem; font-weight: 800; color: var(--cor-texto); font-variant-numeric: tabular-nums; letter-spacing: -.1px; }
+  .foto-caixa {
+    position: relative; flex-shrink: 0; align-self: center; width: 120px; aspect-ratio: 1; border-radius: 16px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; font-size: 2.8rem; box-shadow: 0 6px 16px rgba(16, 24, 40, .18);
+    background: linear-gradient(110deg, var(--cor-clara) 30%, color-mix(in srgb, var(--cor-clara) 60%, #fff) 50%, var(--cor-clara) 70%); background-size: 200% 100%; animation: brilho 1.4s infinite linear;
+  }
+  .foto-caixa img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--curva); }
+  .foto-caixa::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); pointer-events: none; }
+  /* botão "+" no canto da foto: mostra que dá para tocar e adicionar */
+  .produto .foto-caixa::before {
+    content: "+"; position: absolute; right: 7px; bottom: 7px; z-index: 2; width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; background: var(--grad-cor); color: #fff; font-size: 1.3rem; font-weight: 600; line-height: 1;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .35); transition: transform .25s var(--curva);
+  }
+  .anima .produto { animation: entra .5s var(--curva) backwards; }
+  .anima li:nth-child(2) .produto { animation-delay: .04s; } .anima li:nth-child(3) .produto { animation-delay: .08s; }
+  .anima li:nth-child(4) .produto { animation-delay: .12s; } .anima li:nth-child(5) .produto { animation-delay: .16s; }
+  .anima li:nth-child(6) .produto { animation-delay: .2s; }  .anima li:nth-child(n+7) .produto { animation-delay: .24s; }
+  .sem-resultado { padding: 48px 16px; text-align: center; color: var(--cinza); }
+  .rodape { margin-top: 40px; padding: 26px var(--margem) 8px; border-top: 1px solid var(--borda); text-align: center; font-size: .82rem; line-height: 1.9; color: var(--cinza); }
+  .rodape strong { color: var(--texto); }
+
+  @media (hover: hover) {
+    .produto:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--cor) 45%, var(--borda)); box-shadow: var(--sombra-2); }
+    .produto:hover .foto-caixa img { transform: scale(1.08); }
+    .produto:hover .foto-caixa::before { transform: scale(1.12) rotate(90deg); }
+    .btn-icone:hover { border-color: var(--cor); color: var(--cor); }
+    .aba[aria-selected="false"]:hover { border-color: var(--cor); color: var(--texto); }
+  }
+
+  /* ---------- 5) Barras fixas ---------- */
+  .sacola-flutuante { position: fixed; left: 0; right: 0; bottom: calc(68px + env(safe-area-inset-bottom)); z-index: 40; padding: 0 var(--margem); pointer-events: none; }
+  .sacola-flutuante button {
+    pointer-events: auto; display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: calc(var(--largura) - 32px); margin: 0 auto; padding: 15px 20px; border-radius: 16px;
+    background: var(--grad-cor); color: #fff; font-weight: 700; letter-spacing: .2px; box-shadow: var(--sombra-cor), inset 0 1px 0 rgba(255, 255, 255, .25);
+    font-variant-numeric: tabular-nums; animation: sobe .3s var(--curva); transition: transform .15s, filter .2s;
+  }
+  .sacola-flutuante button:active { transform: scale(.985); }
+  .sacola-flutuante button.bump { animation: bump .35s var(--curva); }
+  .nav-inferior {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom);
+    background: var(--fundo-vidro); -webkit-backdrop-filter: blur(16px) saturate(1.5); backdrop-filter: blur(16px) saturate(1.5); border-top: 1px solid var(--borda);
+  }
+  .nav-inferior .itens { display: flex; width: 100%; max-width: var(--largura); }
+  .nav-inferior button { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 0 8px; font-size: .74rem; font-weight: 700; color: var(--cinza); transition: color .2s; }
+  .nav-inferior button svg { width: 24px; height: 24px; transition: transform .25s var(--curva); }
+  .nav-inferior button.ativo { color: var(--cor-texto); }
+  .nav-inferior button.ativo::before { content: ""; position: absolute; top: -1px; left: 32%; right: 32%; height: 3px; border-radius: 0 0 3px 3px; background: var(--cor); }
+  .nav-inferior button:active svg { transform: scale(.88); }
+  .nav-inferior .contador { position: absolute; top: 4px; left: calc(50% + 6px); min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: var(--cor); color: #fff; font-size: .68rem; line-height: 19px; text-align: center; box-shadow: 0 0 0 2px var(--branco); }
+  .toast {
+    position: fixed; left: 50%; bottom: calc(136px + env(safe-area-inset-bottom)); z-index: 60; max-width: calc(100% - 32px); padding: 11px 20px; border-radius: 999px; pointer-events: none;
+    background: var(--toast-bg); color: #fff; font-size: .88rem; font-weight: 600; box-shadow: var(--sombra-2); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    opacity: 0; transform: translate(-50%, 16px); transition: opacity .2s, transform .25s var(--curva);
+  }
+  .toast.visivel { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- 6) Folhas (janelas que sobem de baixo) ---------- */
+  .fundo { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-end; justify-content: center; background: rgba(10, 14, 20, .6); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); animation: aparece .2s; }
+  .folha {
+    width: 100%; max-width: 580px; max-height: 92vh; max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--borda-forte) transparent;
+    padding: 24px 20px calc(22px + env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0; background: var(--branco); border: 1px solid var(--borda); border-bottom: 0;
+    box-shadow: 0 -20px 60px rgba(0, 0, 0, .3); animation: sobe .3s var(--curva);
+  }
+  .folha::before { content: ""; display: block; width: 44px; height: 5px; margin: -12px auto 16px; border-radius: 5px; background: var(--borda-forte); }
+  @media (min-width: 600px) { .fundo { align-items: center; } .folha { border-radius: 28px; border-bottom: 1px solid var(--borda); } .folha::before { display: none; } }
+  .folha h3 { margin-bottom: 12px; font-size: 1.35rem; font-weight: 800; letter-spacing: -.2px; }
+  .folha .fechar { float: right; width: 40px; height: 40px; margin: -6px -8px 0 0; border-radius: 50%; font-size: 1.7rem; line-height: 1; color: var(--cinza); transition: background .2s, color .2s; }
+  .folha .fechar:hover { background: var(--fundo); color: var(--texto); }
+  .capa-item { height: 200px; margin: 0 -20px 16px; display: flex; align-items: center; justify-content: center; font-size: 4.5rem; background: linear-gradient(135deg, var(--cor-clara), color-mix(in srgb, var(--cor-clara) 70%, var(--cor))); overflow: hidden; }
+  .capa-item img { width: 100%; height: 100%; object-fit: cover; }
+  .desc-completa { margin-bottom: 8px; font-size: .94rem; color: var(--cinza); }
+  .preco-item { font-size: 1.3rem; font-weight: 800; color: var(--cor-texto); }
+  .campo { display: block; margin-top: 16px; font-size: .84rem; font-weight: 700; color: var(--cinza); }
+  .campo input, .campo select, .campo textarea {
+    width: 100%; margin-top: 6px; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--borda-forte); background: var(--fundo);
+    font-size: 1rem; font-weight: 400; color: var(--texto); transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  .campo textarea { min-height: 80px; resize: vertical; }
+  .campo input:focus, .campo select:focus, .campo textarea:focus { border-color: var(--cor); background: var(--branco); outline: 0; box-shadow: 0 0 0 4px color-mix(in srgb, var(--cor) 20%, transparent); }
+  .campo [aria-invalid="true"] { border-color: var(--vermelho); background: color-mix(in srgb, var(--vermelho) 10%, var(--branco)); }
+  .rodape-item { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+  .qtd { display: inline-flex; align-items: center; gap: 2px; border: 1px solid var(--borda-forte); border-radius: 14px; background: var(--fundo); }
+  .qtd button { width: 42px; height: 46px; font-size: 1.35rem; font-weight: 700; color: var(--cor-texto); border-radius: 12px; transition: background .15s; }
+  .qtd button:hover { background: var(--cor-clara); }
+  .qtd span { min-width: 28px; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .btn { padding: 15px 20px; border-radius: 14px; background: var(--grad-cor); color: #fff; font-weight: 700; letter-spacing: .2px; box-shadow: var(--sombra-cor), inset 0 1px 0 rgba(255, 255, 255, .22); transition: filter .2s, transform .15s; }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:active { transform: scale(.985); }
+  .btn.cheio { width: 100%; margin-top: 20px; }
+  .btn.flex { flex: 1; display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+  .btn.whats { background: linear-gradient(135deg, #25d366, #128c4a); box-shadow: 0 10px 24px rgba(18, 140, 74, .32), inset 0 1px 0 rgba(255, 255, 255, .25); }
+  .linha { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--borda); font-variant-numeric: tabular-nums; }
+  .linha.sem-borda { padding: 4px 0; border: 0; color: var(--cinza); }
+  .linha.total { padding-top: 12px; font-size: 1.25rem; font-weight: 800; color: var(--texto); }
+  .linha .obs { font-size: .82rem; color: var(--cinza); }
+  .escolhas { display: flex; gap: 10px; margin-top: 8px; }
+  .escolhas label { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border-radius: 12px; border: 1px solid var(--borda-forte); font-weight: 700; cursor: pointer; background: var(--fundo); transition: border-color .2s, background .2s; }
+  .escolhas input { accent-color: var(--cor); }
+  .escolhas label:has(input:checked) { border-color: var(--cor); background: var(--cor-clara); color: var(--cor-texto); }
+  .msg-erro { min-height: 1.3em; margin-top: 12px; font-size: .9rem; font-weight: 700; color: var(--vermelho); }
+  .nota-exemplo { margin-top: 8px; padding: 8px 12px; border-radius: 10px; font-size: .84rem; color: var(--cinza); background: color-mix(in srgb, var(--cinza) 12%, transparent); }
+  .acoes-info { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-link { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 13px 10px; border-radius: 14px; border: 1px solid var(--borda-forte); background: var(--fundo); color: var(--texto); font-weight: 700; text-decoration: none; transition: border-color .2s, color .2s, transform .1s; }
+  .btn-link:active { transform: scale(.97); }
+  @media (hover: hover) { .btn-link:hover { border-color: var(--cor); color: var(--cor-texto); } }
+  .info p { margin: 12px 0; font-size: .96rem; padding-bottom: 12px; border-bottom: 1px solid var(--borda); }
+  .info p:last-child { border: 0; }
+  .info strong { display: block; margin-bottom: 2px; font-size: .74rem; color: var(--cinza); text-transform: uppercase; letter-spacing: .8px; }
+
+  /* ---------- Animações ---------- */
+  @keyframes sobe { from { transform: translateY(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes desce { from { transform: translateY(-8px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes aparece { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes entra { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+  @keyframes brilho { to { background-position: -200% 0; } }
+  @keyframes pulsa { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); } 70%, 100% { box-shadow: 0 0 0 7px transparent; } }
+  @keyframes bump { 40% { transform: scale(1.03); } }
+
+  /* ---------- 7) Ajustes ---------- */
+  @media (max-width: 359px) { .foto-caixa { width: 92px; } .produto { padding: 12px; gap: 10px; } .aba { padding: 0 9px; font-size: .8rem; } }
+  @media (prefers-contrast: more) { :root { --borda: #8a93a1; --cinza: #475467; } }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .barra-cat, .nav-inferior { background: var(--fundo); }
+    .fundo { background: rgba(10, 14, 20, .85); }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+  @media print {
+    .barra-cat, .nav-inferior, .sacola-flutuante, .toast, .fundo, .demo, .busca-linha { display: none !important; }
+    .app { box-shadow: none; padding: 0; max-width: none; } .produto { break-inside: avoid; box-shadow: none; }
+    .foto-caixa::before { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<a class="pular" href="#principal">Pular para o cardápio</a>
+<!-- Faixa de aviso: esta página é uma proposta. Remova quando for aprovada. -->
+<div class="demo" role="note" id="faixa-demo"></div>
+
+<div class="app">
+  <header>
+    <div class="faixa"></div>
+    <div class="cartao">
+      <button type="button" class="btn-tema" id="btn-tema" aria-label="Mudar o tema" aria-pressed="false">
+        <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+        <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <div class="logo"><img id="logo-img" src="imagens/logo.jpg" alt="Logo da D'Casa Pizzaria e Petiscaria" width="150" height="150" fetchpriority="high" decoding="async"><span id="sigla" class="oculto" aria-hidden="true"></span></div>
+      <h1 id="nome"></h1>
+      <p class="local">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="cidade"></span> <span aria-hidden="true">•</span> <button type="button" class="link" id="btn-info">Mais informações</button>
+      </p>
+      <p class="status" id="status"></p>
+    </div>
+  </header>
+
+  <div class="barra-cat">
+    <nav class="abas" id="abas" role="tablist" aria-label="Categorias do cardápio"></nav>
+    <button type="button" class="btn-icone" id="btn-busca" aria-label="Buscar no cardápio" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+  </div>
+  <div class="busca-linha oculto" id="busca-linha" role="search">
+    <label class="so-leitor" for="busca">Buscar no cardápio</label>
+    <input type="search" id="busca" placeholder="Buscar no cardápio" autocomplete="off" enterkeyhint="search">
+  </div>
+
+  <main id="principal" tabindex="-1">
+    <div id="cardapio" role="tabpanel"></div>
+  </main>
+  <footer class="rodape" id="rodape"></footer>
+</div>
+
+<noscript><p style="padding:24px;text-align:center">Ative o JavaScript para ver o cardápio e fazer o pedido.</p></noscript>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="sacola-flutuante oculto" id="sacola-flutuante">
+  <button type="button" id="btn-sacola-flutuante"><span id="flut-qtd"></span><span>Ver sacola</span><span id="flut-total"></span></button>
+</div>
+
+<nav class="nav-inferior" aria-label="Navegação">
+  <div class="itens">
+    <button type="button" class="ativo" id="nav-inicio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Início</button>
+    <button type="button" id="nav-sacola" aria-label="Sacola">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>Sacola<span class="contador oculto" id="nav-contador">0</span></button>
+    <button type="button" id="nav-info">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Informações</button>
+  </div>
+</nav>
+
+<div class="fundo oculto" id="fundo">
+  <div class="folha" role="dialog" aria-modal="true" aria-labelledby="folha-titulo">
+    <button type="button" class="fechar" id="btn-fechar" aria-label="Fechar">×</button>
+    <div id="folha-conteudo"></div>
+  </div>
+</div>
+
+<script src="cardapio.js"></script>
+<script>
+/* Os dados da loja e o cardápio ficam em cardapio.js (carregado antes deste script). */
+if (typeof CARDAPIO === "undefined" || typeof LOJA === "undefined") {
+  document.body.innerHTML = '<p style="padding:32px 20px;text-align:center;font-family:system-ui,sans-serif">Não foi possível carregar o cardápio agora. Tente novamente em instantes.</p>';
+  throw new Error("cardapio.js não carregou ou tem um erro de digitação (veja o COMO-EDITAR.md)");
+}
+/* ============================================================
+   3) ESTADO E UTILITÁRIOS
+   ============================================================ */
+let sacola = [];            // [{ chave, nome, preco, qtd, obs }]
+let ultimoFoco = null;
+let categoriaAtiva = 0;     // aba aberta (0 = primeira)
+let temporizadorToast;
+const CHAVE_CLIENTE = "dcasa-cliente";
+const $ = (id) => document.getElementById(id);
+const moeda = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const slug = (s) => "cat-" + s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-");
+const subtotal = () => Math.round(sacola.reduce((t, i) => t + i.preco * i.qtd, 0) * 100) / 100;   // arredonda os centavos
+const totalQtd = () => sacola.reduce((t, i) => t + i.qtd, 0);
+
+// A sacola sobrevive a recarregar a página (só nesta aba; some quando ela fecha). Os preços vêm sempre do cardápio atual.
+const CHAVE_SACOLA = "dcasa-sacola";
+const salvarSacola = () => { try { sessionStorage.setItem(CHAVE_SACOLA, JSON.stringify(sacola.map(({ nome, qtd, obs }) => ({ nome, qtd, obs })))); } catch (e) { /* tudo bem */ } };
+function lerSacola() {
+  try {
+    const todos = CARDAPIO.flatMap((c) => c.itens);
+    return (JSON.parse(sessionStorage.getItem(CHAVE_SACOLA)) || []).flatMap(({ nome, qtd, obs }) => {
+      const item = todos.find((i) => i.nome === nome);
+      return item && qtd > 0 ? [{ chave: nome + "|" + (obs || ""), nome, preco: item.preco, qtd: Math.min(20, qtd), obs: obs || "" }] : [];
+    });
+  } catch (e) { return []; }
+}
+const lerCliente = () => { try { return JSON.parse(localStorage.getItem(CHAVE_CLIENTE)) || {}; } catch (e) { return {}; } };
+const salvarCliente = (d) => { try { localStorage.setItem(CHAVE_CLIENTE, JSON.stringify(d)); } catch (e) { /* sem armazenamento: tudo bem */ } };
+const hhmm = (s) => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
+const rotuloHora = (s) => s.replace(":", "h");
+const DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+
+// "Aberto até às 23h00" ou "Fechado · abre hoje às 18h00"
+function statusLoja() {
+  const h = LOJA.horario, agora = new Date(), min = agora.getHours() * 60 + agora.getMinutes();
+  if (h.dias.includes(agora.getDay()) && min >= hhmm(h.abre) && min < hhmm(h.fecha)) return { aberto: true, texto: `Aberto até às ${rotuloHora(h.fecha)}` };
+  for (let d = 0; d < 8; d++) {
+    const dia = (agora.getDay() + d) % 7;
+    if (h.dias.includes(dia) && (d > 0 || min < hhmm(h.abre))) {
+      const quando = d === 0 ? "hoje" : d === 1 ? "amanhã" : DIAS[dia];
+      return { aberto: false, texto: `Fechado · abre ${quando} às ${rotuloHora(h.abre)}` };
+    }
+  }
+  return { aberto: false, texto: "Fechado" };
+}
+
+/* ============================================================
+   4) CARDÁPIO NA TELA
+   ============================================================ */
+function montarLoja() {
+  document.title = `${LOJA.nome} – Cardápio Online${AVISO_DEMO ? " (proposta)" : ""}`;
+  $("faixa-demo").textContent = AVISO_DEMO;
+  $("faixa-demo").classList.toggle("oculto", !AVISO_DEMO);   // AVISO_DEMO vazio ("") esconde a faixa de proposta
+  $("nome").textContent = LOJA.nome;
+  $("sigla").textContent = LOJA.sigla;
+  $("cidade").textContent = LOJA.cidade;
+  const st = statusLoja();
+  $("status").textContent = st.texto;
+  $("status").classList.toggle("fechado", !st.aberto);
+  $("rodape").innerHTML = `<strong>${esc(LOJA.nome)}</strong><br>${esc(LOJA.endereco)}<br>${esc(LOJA.telefone)}${AVISO_DEMO ? "<br><small>Página de demonstração (proposta).</small>" : ""}`;
+  $("abas").innerHTML = CARDAPIO.map((c, i) =>
+    `<button type="button" role="tab" id="aba-${i}" class="aba" aria-controls="cardapio" data-cat="${i}">${esc(c.rotulo || c.categoria)}</button>`).join("");
+  document.querySelectorAll(".aba").forEach((b) => b.addEventListener("click", () => irParaAba(Number(b.dataset.cat))));
+  desenharCardapio("");
+}
+
+// Abre uma aba. Se vier do teclado, o foco acompanha.
+function irParaAba(i, focar) {
+  categoriaAtiva = i;
+  $("busca").value = "";
+  desenharCardapio("");
+  animarEntrada();
+  if (focar) $("aba-" + i).focus();
+  const topo = $("cardapio").getBoundingClientRect().top;
+  if (topo < 70) window.scrollBy({ top: topo - 70, behavior: "smooth" });   // volta ao começo da lista
+}
+
+// Os cards entram em sequência quando a aba muda (e não enquanto você digita na busca)
+function animarEntrada() {
+  const c = $("cardapio");
+  c.classList.remove("anima"); void c.offsetWidth; c.classList.add("anima");
+  clearTimeout(animarEntrada.t);
+  animarEntrada.t = setTimeout(() => c.classList.remove("anima"), 900);
+}
+
+// Marca a aba aberta (nenhuma, enquanto está buscando)
+function marcarAba(buscando) {
+  document.querySelectorAll(".aba").forEach((b, i) => {
+    b.setAttribute("aria-selected", !buscando && i === categoriaAtiva);
+    b.tabIndex = i === categoriaAtiva ? 0 : -1;       // setas do teclado trocam de aba
+  });
+  const ativa = document.querySelector('.aba[aria-selected="true"]');
+  if (ativa) { const nav = $("abas"); nav.scrollTo({ left: ativa.offsetLeft - (nav.clientWidth - ativa.offsetWidth) / 2, behavior: "smooth" }); }
+}
+
+function desenharCardapio(filtro) {
+  const termo = filtro.trim().toLowerCase();
+  const categorias = termo ? CARDAPIO : [CARDAPIO[categoriaAtiva]];   // com busca, procura em todas as abas
+  marcarAba(Boolean(termo));
+  const painel = $("cardapio");   // o painel das abas diz a leitores de tela de qual aba (ou busca) é o conteúdo
+  if (termo) { painel.removeAttribute("aria-labelledby"); painel.setAttribute("aria-label", "Resultados da busca"); }
+  else { painel.removeAttribute("aria-label"); painel.setAttribute("aria-labelledby", "aba-" + categoriaAtiva); }
+  let n = 0;                      // as 4 primeiras fotos carregam já; as outras sob demanda
+  const html = categorias.map((cat) => {
+    const itens = cat.itens.filter((i) => !termo || (i.nome + " " + i.desc).toLowerCase().includes(termo));
+    if (!itens.length) return "";
+    const id = slug(cat.categoria);
+    return `<section class="secao" id="${id}" aria-labelledby="t-${id}">
+      <h2 id="t-${id}">${esc(cat.categoria)}</h2>
+      <ul class="lista">${itens.map((i) => `<li><button type="button" class="produto" data-cat="${esc(cat.categoria)}" data-nome="${esc(i.nome)}" aria-label="${esc(i.nome)}, ${moeda(i.preco)}">
+        <span class="texto">
+          ${i.selo || i.exemplo ? `<span class="selos">${i.selo ? `<span class="selo">${esc(i.selo)}</span>` : ""}${i.exemplo ? '<span class="selo exemplo">Exemplo</span>' : ""}</span>` : ""}
+          <span class="nome">${esc(i.nome)}</span>
+          <span class="desc">${esc(i.desc)}</span>
+          <span class="preco">${moeda(i.preco)}</span>
+        </span>
+        <span class="foto-caixa" aria-hidden="true">${i.foto ? `<img src="imagens/${esc(i.foto)}.jpg" alt="" loading="${n++ < 4 ? "eager" : "lazy"}" decoding="async" width="118" height="118">` : esc(cat.emoji)}</span>
+      </button></li>`).join("")}</ul></section>`;
+  }).join("");
+  $("cardapio").innerHTML = html || '<p class="sem-resultado">Nenhum item encontrado para essa busca.</p>';
+  document.querySelectorAll(".produto").forEach((b) => b.addEventListener("click", () => folhaItem(b.dataset.cat, b.dataset.nome)));
+  document.querySelectorAll(".foto-caixa img").forEach((img) => img.addEventListener("error", () => { img.parentElement.textContent = "🍽️"; }));
+}
+
+function achar(cat, nome) { return CARDAPIO.find((c) => c.categoria === cat).itens.find((i) => i.nome === nome); }
+
+function avisar(texto) {
+  const t = $("toast");
+  t.textContent = texto;
+  t.classList.add("visivel");
+  clearTimeout(temporizadorToast);
+  temporizadorToast = setTimeout(() => t.classList.remove("visivel"), 1600);
+}
+
+function atualizarBarras() {
+  const q = totalQtd();
+  $("sacola-flutuante").classList.toggle("oculto", q === 0);
+  $("flut-qtd").textContent = q + (q === 1 ? " item" : " itens");
+  $("flut-total").textContent = moeda(subtotal());
+  $("nav-contador").textContent = q;
+  $("nav-contador").classList.toggle("oculto", q === 0);
+  $("nav-sacola").setAttribute("aria-label", q ? `Sacola, ${q} ${q === 1 ? "item" : "itens"}` : "Sacola");
+  salvarSacola();
+}
+
+// Confere o cardápio quando a página abre: aceita preço escrito como "32,00", acha nomes repetidos e preços inválidos.
+// Os avisos aparecem no console do navegador (F12), para quem edita o cardapio.js conferir o que errou.
+function prepararCardapio(cardapio) {
+  const avisos = [], vistos = new Set();
+  cardapio.forEach((cat) => cat.itens.forEach((i) => {
+    if (typeof i.preco !== "number") i.preco = Number(String(i.preco).replace(",", "."));
+    if (!(i.preco > 0)) { avisos.push(`preço inválido em "${i.nome}" (use números, como 32.00)`); i.preco = 0; }
+    if (!i.nome) avisos.push(`item sem nome na categoria "${cat.categoria}"`);
+    else if (vistos.has(i.nome)) avisos.push(`nome repetido: "${i.nome}" (cada item precisa de um nome diferente)`);
+    else vistos.add(i.nome);
+    i.desc = i.desc || "";
+  }));
+  return avisos;
+}
+
+// Dados estruturados para o Google (nome, endereço, telefone, horário, cardápio e preços)
+function dadosEstruturados() {
+  const h = LOJA.horario, nomes = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dados = {
+    "@context": "https://schema.org", "@type": "Restaurant", name: LOJA.nome, telephone: LOJA.telefone, image: "imagens/logo.jpg",
+    address: { "@type": "PostalAddress", streetAddress: LOJA.endereco, addressCountry: "BR" },
+    openingHoursSpecification: [{ "@type": "OpeningHoursSpecification", dayOfWeek: h.dias.map((d) => nomes[d]), opens: h.abre, closes: h.fecha }],
+    hasMenu: { "@type": "Menu", hasMenuSection: CARDAPIO.map((c) => ({
+      "@type": "MenuSection", name: c.categoria,
+      hasMenuItem: c.itens.map((i) => ({ "@type": "MenuItem", name: i.nome, description: i.desc || undefined, offers: { "@type": "Offer", price: i.preco.toFixed(2), priceCurrency: "BRL" } }))
+    })) }
+  };
+  const s = document.createElement("script");
+  s.type = "application/ld+json";
+  s.textContent = JSON.stringify(dados).replace(/</g, "\\u003c");
+  document.head.appendChild(s);
+}
+
+/* ============================================================
+   5) FOLHAS: item, categorias, sacola, checkout, informações
+   ============================================================ */
+// Com uma janela aberta, o resto da página fica "inerte" (sem foco, cliques ou leitura por leitores de tela)
+const PARTES_DE_FUNDO = [".app", ".nav-inferior", ".sacola-flutuante", ".demo"];
+const deixarInerte = (v) => PARTES_DE_FUNDO.forEach((s) => { const el = document.querySelector(s); if (el) el.inert = v; });
+// Marca na barra de baixo em qual aba o cliente está (Início, Sacola ou Informações)
+const marcarNav = (id) => document.querySelectorAll(".nav-inferior button").forEach((b) => b.classList.toggle("ativo", b.id === id));
+
+function abrirFolha(html, nav = "nav-inicio") {
+  if ($("fundo").classList.contains("oculto")) ultimoFoco = document.activeElement;
+  $("folha-conteudo").innerHTML = html;
+  $("fundo").classList.remove("oculto");
+  document.body.classList.add("travado");
+  deixarInerte(true); marcarNav(nav);
+  $("btn-fechar").focus();
+}
+function fecharFolha() {
+  if ($("fundo").classList.contains("oculto")) return;
+  $("fundo").classList.add("oculto");
+  document.body.classList.remove("travado");
+  deixarInerte(false); marcarNav("nav-inicio");
+  if (ultimoFoco && document.contains(ultimoFoco)) ultimoFoco.focus();
+}
+
+// Folha do produto: quantidade, observações e botão "Adicionar"
+function folhaItem(cat, nome) {
+  const item = achar(cat, nome), emoji = CARDAPIO.find((c) => c.categoria === cat).emoji;
+  let qtd = 1;
+  abrirFolha(`<div class="capa-item">${item.foto ? `<img src="imagens/${esc(item.foto)}.jpg" alt="">` : esc(emoji)}</div>
+    <h3 id="folha-titulo">${esc(item.nome)}</h3>
+    <p class="desc-completa">${esc(item.desc)}</p>
+    <p class="preco-item">${moeda(item.preco)}</p>
+    ${item.exemplo ? '<p class="nota-exemplo">Preço de exemplo, a confirmar com a loja.</p>' : ""}
+    <label class="campo">Alguma observação?<textarea id="f-obs" placeholder="Ex.: sem cebola, bem passada..." maxlength="140"></textarea></label>
+    <div class="rodape-item">
+      <div class="qtd"><button type="button" id="q-menos" aria-label="Diminuir">−</button><span id="q-valor" aria-live="polite">1</span><button type="button" id="q-mais" aria-label="Aumentar">+</button></div>
+      <button type="button" class="btn flex" id="btn-adicionar"><span>Adicionar</span><span id="q-total">${moeda(item.preco)}</span></button>
+    </div>`);
+  const atualizar = () => { $("q-valor").textContent = qtd; $("q-total").textContent = moeda(item.preco * qtd); };
+  $("q-menos").addEventListener("click", () => { qtd = Math.max(1, qtd - 1); atualizar(); });
+  $("q-mais").addEventListener("click", () => { qtd = Math.min(20, qtd + 1); atualizar(); });
+  $("btn-adicionar").addEventListener("click", () => {
+    const obs = $("f-obs").value.trim(), chave = nome + "|" + obs;
+    const ja = sacola.find((i) => i.chave === chave);
+    if (ja) ja.qtd += qtd; else sacola.push({ chave, nome, preco: item.preco, qtd, obs });
+    fecharFolha(); atualizarBarras(); avisar(`✓ ${nome} adicionado`);
+    const b = $("btn-sacola-flutuante"); b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump");
+  });
+}
+
+function folhaSacola() {
+  if (!sacola.length) { abrirFolha(`<h3 id="folha-titulo">Sua sacola</h3><p class="sem-resultado">Sua sacola está vazia.<br>Escolha algo no cardápio. 🍕</p>`, "nav-sacola"); return; }
+  const linhas = sacola.map((i) => `<div class="linha"><div><strong>${esc(i.nome)}</strong>${i.obs ? `<br><span class="obs">Obs.: ${esc(i.obs)}</span>` : ""}<br>
+      <span class="qtd"><button type="button" data-acao="-" data-chave="${esc(i.chave)}" aria-label="Diminuir ${esc(i.nome)}">−</button><span aria-live="polite">${i.qtd}</span><button type="button" data-acao="+" data-chave="${esc(i.chave)}" aria-label="Aumentar ${esc(i.nome)}">+</button></span></div>
+    <strong>${moeda(i.preco * i.qtd)}</strong></div>`).join("");
+  abrirFolha(`<h3 id="folha-titulo">Sua sacola</h3>${linhas}
+    <div class="linha sem-borda"><span>Subtotal</span><span>${moeda(subtotal())}</span></div>
+    <div class="linha sem-borda"><span>Entrega (se for entrega)</span><span>${moeda(LOJA.taxaEntrega)}</span></div>
+    <button type="button" class="btn cheio" id="btn-finalizar">Finalizar pedido</button>`, "nav-sacola");
+  document.querySelectorAll("[data-acao]").forEach((b) => b.addEventListener("click", () => {
+    const it = sacola.find((i) => i.chave === b.dataset.chave); if (!it) return;
+    it.qtd += b.dataset.acao === "+" ? 1 : -1;
+    if (it.qtd <= 0) sacola = sacola.filter((i) => i !== it);
+    atualizarBarras(); folhaSacola();
+  }));
+  $("btn-finalizar").addEventListener("click", folhaCheckout);
+}
+
+function folhaCheckout() {
+  const c = lerCliente();
+  abrirFolha(`<h3 id="folha-titulo">Finalizar pedido</h3>
+    <form id="form" novalidate>
+      <div class="escolhas" role="radiogroup" aria-label="Como você quer receber?">
+        <label><input type="radio" name="tipo" value="Entrega" checked> Entrega</label>
+        <label><input type="radio" name="tipo" value="Retirada"> Retirada</label>
+      </div>
+      <label class="campo">Seu nome *<input id="f-nome" type="text" autocomplete="name" autocapitalize="words" aria-required="true" value="${esc(c.nome || "")}"></label>
+      <div id="bloco-endereco">
+        <label class="campo">Rua e número *<input id="f-rua" type="text" autocomplete="address-line1" autocapitalize="words" aria-required="true" value="${esc(c.rua || "")}"></label>
+        <label class="campo">Bairro *<input id="f-bairro" type="text" autocomplete="address-level3" autocapitalize="words" aria-required="true" value="${esc(c.bairro || "")}"></label>
+        <label class="campo">Complemento / ponto de referência<input id="f-comp" type="text" autocomplete="address-line2" value="${esc(c.comp || "")}"></label>
+      </div>
+      <label class="campo">Forma de pagamento *
+        <select id="f-pag" aria-required="true"><option value="">Selecione</option>${LOJA.pagamentos.map((p) => `<option>${esc(p)}</option>`).join("")}</select></label>
+      <label class="campo oculto" id="bloco-troco">Troco para quanto?<input id="f-troco" type="text" inputmode="decimal" placeholder="Ex.: 50 (ou 0 se não precisa)"></label>
+      <div class="linha sem-borda" style="margin-top:14px"><span>Subtotal</span><span>${moeda(subtotal())}</span></div>
+      <div class="linha sem-borda"><span id="rotulo-taxa">Entrega</span><span id="valor-taxa">${moeda(LOJA.taxaEntrega)}</span></div>
+      <div class="linha sem-borda total"><span>Total</span><span id="valor-total">${moeda(subtotal() + LOJA.taxaEntrega)}</span></div>
+      <p class="msg-erro" id="msg-erro" role="alert"></p>
+      <button type="submit" class="btn cheio whats">Enviar pedido por WhatsApp</button>
+    </form>`, "nav-sacola");
+  const entrega = () => document.querySelector('input[name="tipo"]:checked').value === "Entrega";
+  const recalcular = () => {
+    const e = entrega();
+    $("bloco-endereco").classList.toggle("oculto", !e);
+    $("valor-taxa").textContent = e ? moeda(LOJA.taxaEntrega) : moeda(0);
+    $("rotulo-taxa").textContent = e ? "Entrega" : "Retirada na loja";
+    $("valor-total").textContent = moeda(subtotal() + (e ? LOJA.taxaEntrega : 0));
+  };
+  document.querySelectorAll('input[name="tipo"]').forEach((r) => r.addEventListener("change", recalcular));
+  $("f-pag").addEventListener("change", (e) => $("bloco-troco").classList.toggle("oculto", e.target.value !== "Dinheiro"));
+  $("form").addEventListener("submit", (e) => enviar(e, entrega()));
+}
+
+function enviar(e, entrega) {
+  e.preventDefault();
+  const ids = ["f-nome", "f-rua", "f-bairro", "f-pag"];
+  const obrig = [["f-nome", "Nome"]];
+  if (entrega) obrig.push(["f-rua", "Rua e número"], ["f-bairro", "Bairro"]);
+  obrig.push(["f-pag", "Forma de pagamento"]);
+  ids.forEach((id) => $(id).removeAttribute("aria-invalid"));
+  let erro = "", primeiro = null;
+  obrig.forEach(([id, rotulo]) => {
+    if ($(id).value.trim() === "") { $(id).setAttribute("aria-invalid", "true"); if (!erro) { erro = `Preencha: ${rotulo}.`; primeiro = $(id); } }
+  });
+  $("msg-erro").textContent = erro;
+  if (erro) { primeiro.focus(); return; }
+  if (!sacola.length) { $("msg-erro").textContent = "Sua sacola está vazia."; return; }
+
+  const v = (id) => $(id).value.trim();
+  salvarCliente({ nome: v("f-nome"), rua: v("f-rua"), bairro: v("f-bairro"), comp: v("f-comp") });
+  const taxa = entrega ? LOJA.taxaEntrega : 0;
+  const itens = sacola.map((i) => `• ${i.qtd}x ${i.nome} - ${moeda(i.preco * i.qtd)}` + (i.obs ? `\n   Obs.: ${i.obs}` : "")).join("\n");
+  let msg = `*NOVO PEDIDO - ${LOJA.nome}*\n\nCliente: ${v("f-nome")}\nTipo: ${entrega ? "Entrega" : "Retirada na loja"}\n\n*Itens:*\n${itens}\n\n` +
+    `Subtotal: ${moeda(subtotal())}\n${entrega ? `Taxa de entrega: ${moeda(taxa)}\n` : ""}*Total: ${moeda(subtotal() + taxa)}*\n\n`;
+  if (entrega) msg += `*Endereço:*\n${v("f-rua")}\nBairro: ${v("f-bairro")}\n${v("f-comp") ? `Complemento: ${v("f-comp")}\n` : ""}\n`;
+  msg += `*Pagamento:* ${v("f-pag")}`;
+  if (v("f-pag") === "Dinheiro" && v("f-troco")) msg += `\nTroco para: ${v("f-troco")}`;
+  // abre o WhatsApp por um link (não é barrado por bloqueadores de pop-up, que costumam barrar window.open)
+  const link = document.createElement("a");
+  link.href = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`;
+  link.target = "_blank"; link.rel = "noopener";
+  document.body.appendChild(link); link.click(); link.remove();
+  fecharFolha(); avisar("Abrindo o WhatsApp… é só enviar a mensagem 😉");
+}
+
+function folhaInfo() {
+  const h = LOJA.horario, st = statusLoja();
+  abrirFolha(`<h3 id="folha-titulo">Informações</h3><div class="info">
+    <p><strong>Situação</strong>${esc(st.texto)}</p>
+    <p><strong>Horário</strong>Terça a domingo, das ${esc(rotuloHora(h.abre))} às ${esc(rotuloHora(h.fecha))}</p>
+    <p><strong>Endereço</strong>${esc(LOJA.endereco)}</p>
+    <p><strong>Telefone</strong>${esc(LOJA.telefone)}</p>
+    <p><strong>Formas de pagamento</strong>${LOJA.pagamentos.map(esc).join(", ")}</p>
+    <p><strong>Taxa de entrega</strong>${moeda(LOJA.taxaEntrega)} (exemplo)</p></div>
+    <div class="acoes-info">
+      <a class="btn-link" href="tel:+55${LOJA.telefone.replace(/\D/g, "")}">📞 Ligar</a>
+      <a class="btn-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(LOJA.endereco)}" target="_blank" rel="noopener">📍 Como chegar</a>
+    </div>`, "nav-info");
+}
+
+/* ============================================================
+   6) EVENTOS E INICIALIZAÇÃO
+   ============================================================ */
+// Teclado nas abas: setas, Home e End
+$("abas").addEventListener("keydown", (e) => {
+  const n = CARDAPIO.length;
+  let i = categoriaAtiva;
+  if (e.key === "ArrowRight") i = (i + 1) % n;
+  else if (e.key === "ArrowLeft") i = (i - 1 + n) % n;
+  else if (e.key === "Home") i = 0;
+  else if (e.key === "End") i = n - 1;
+  else return;
+  e.preventDefault();
+  irParaAba(i, true);
+});
+$("btn-info").addEventListener("click", folhaInfo);
+$("nav-info").addEventListener("click", folhaInfo);
+$("nav-sacola").addEventListener("click", folhaSacola);
+$("btn-sacola-flutuante").addEventListener("click", folhaSacola);
+$("nav-inicio").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+$("btn-fechar").addEventListener("click", fecharFolha);
+$("fundo").addEventListener("click", (e) => { if (e.target === $("fundo")) fecharFolha(); });
+$("btn-busca").addEventListener("click", () => {
+  const linha = $("busca-linha"), abrir = linha.classList.contains("oculto");
+  linha.classList.toggle("oculto", !abrir);
+  $("btn-busca").setAttribute("aria-expanded", abrir);
+  if (abrir) $("busca").focus(); else { $("busca").value = ""; desenharCardapio(""); }
+});
+$("busca").addEventListener("input", (e) => desenharCardapio(e.target.value));
+
+document.addEventListener("keydown", (e) => {
+  if ($("fundo").classList.contains("oculto")) return;
+  if (e.key === "Escape") { fecharFolha(); return; }
+  if (e.key === "Tab") {   // mantém o Tab dentro da janela aberta
+    const foco = [...$("fundo").querySelectorAll("button, input, select, textarea")].filter((el) => el.offsetParent !== null);
+    if (!foco.length) return;
+    const primeiro = foco[0], ultimo = foco[foco.length - 1];
+    if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+    else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+  }
+});
+
+// Tema claro / escuro: segue o aparelho até o cliente escolher; a escolha fica salva só neste aparelho
+const CHAVE_TEMA = "dcasa-tema";
+const temaSalvo = () => { try { return localStorage.getItem(CHAVE_TEMA); } catch (e) { return null; } };
+function aplicarTema(tema) {
+  document.documentElement.dataset.tema = tema;
+  const escuro = tema === "escuro";
+  $("btn-tema").setAttribute("aria-pressed", escuro);
+  $("btn-tema").setAttribute("aria-label", escuro ? "Mudar para o modo claro" : "Mudar para o modo escuro");
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = escuro ? "#101216" : "#c8191f";
+}
+aplicarTema(document.documentElement.dataset.tema === "escuro" ? "escuro" : "claro");
+$("btn-tema").addEventListener("click", () => {
+  const novo = document.documentElement.dataset.tema === "escuro" ? "claro" : "escuro";
+  aplicarTema(novo);
+  try { localStorage.setItem(CHAVE_TEMA, novo); } catch (e) { /* sem armazenamento: vale só nesta visita */ }
+  avisar(novo === "escuro" ? "🌙 Modo escuro" : "☀️ Modo claro");
+});
+// se o cliente nunca escolheu, acompanha o tema do aparelho quando ele mudar
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => { if (!temaSalvo()) aplicarTema(e.matches ? "escuro" : "claro"); });
+
+// Sombra sutil na barra de abas depois que a página rola
+const barraCat = document.querySelector(".barra-cat");
+window.addEventListener("scroll", () => barraCat.classList.toggle("rolou", window.scrollY > 150), { passive: true });
+
+// Se o logo não carregar, mostra o monograma no lugar
+$("logo-img").addEventListener("error", () => { $("logo-img").classList.add("oculto"); $("sigla").classList.remove("oculto"); });
+
+prepararCardapio(CARDAPIO).forEach((a) => console.warn("[cardápio] " + a));
+sacola = lerSacola();   // recupera a sacola se a página foi recarregada
+montarLoja();
+dadosEstruturados();
+atualizarBarras();
+animarEntrada();
+</script>
+</body>
+</html>
